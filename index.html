@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Ruta del Valor - De lo Cotidiano a la Teoría de Marx</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter y Merriweather -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        marxRed: '#8B0000',
+                        marxGold: '#D97706',
+                        academicDark: '#0F172A',
+                        paperBg: '#F8FAFCE6'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 12px rgba(217, 119, 6, 0.3); }
+            50% { box-shadow: 0 0 22px rgba(217, 119, 6, 0.7); }
+        }
+        .active-turn {
+            animation: glow 2s infinite;
+        }
+        .board-tile {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .board-tile:hover {
+            transform: translateY(-3px);
+        }
+        .token {
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.4));
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Encabezado Principal -->
+    <header class="bg-slate-900 border-b border-amber-900/40 p-4 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-950 flex items-center justify-center border border-amber-500/50 shadow-inner">
+                    <i class="fa-solid fa-compass-drafting text-amber-400 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif font-bold text-2xl text-amber-400 tracking-wide">La Ruta del Valor</h1>
+                    <p class="text-xs text-slate-400">Un viaje inductivo: Descubriendo la lógica oculta detrás de las cosas</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="openConceptMapModal()" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-sitemap text-amber-400"></i> Mapa de Inferencia
+                </button>
+                <button onclick="confirmReset()" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-800/80 transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Reiniciar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto w-full p-4 md:p-6 flex-grow flex flex-col gap-6">
+
+        <!-- CONFIGURACIÓN DE JUGADORES -->
+        <section id="setup-section" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur-md max-w-2xl mx-auto w-full my-auto">
+            <div class="text-center mb-6">
+                <span class="px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold text-xs rounded-full uppercase tracking-wider">Aprendizaje Inductivo</span>
+                <h2 class="text-2xl md:text-3xl font-serif font-bold text-slate-100 mt-2 mb-2">Configura tu Equipo de Investigación</h2>
+                <p class="text-sm text-slate-400">No necesitas conocimientos previos de economía política. El juego plantea dilemas cotidianos para deducir los conceptos teóricos.</p>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">Número de Participantes o Equipos:</label>
+                    <div class="grid grid-cols-4 gap-3">
+                        <button type="button" onclick="setPlayerCount(1)" class="count-btn py-3 rounded-xl border border-slate-700 bg-slate-800 text-white font-bold transition">1</button>
+                        <button type="button" onclick="setPlayerCount(2)" class="count-btn py-3 rounded-xl border border-slate-700 bg-slate-800 text-white font-bold transition">2</button>
+                        <button type="button" onclick="setPlayerCount(3)" class="count-btn py-3 rounded-xl border border-amber-500 bg-amber-500/20 text-amber-400 font-bold transition">3</button>
+                        <button type="button" onclick="setPlayerCount(4)" class="count-btn py-3 rounded-xl border border-slate-700 bg-slate-800 text-white font-bold transition">4</button>
+                    </div>
+                </div>
+
+                <div id="player-names-container" class="space-y-3">
+                    <!-- Dinámico -->
+                </div>
+
+                <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-red-900 via-red-800 to-amber-700 hover:from-red-800 hover:to-amber-600 text-white font-bold text-base rounded-xl shadow-lg transition transform active:scale-98 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> Comenzar la Exploración
+                </button>
+            </div>
+        </section>
+
+        <!-- PANEL DE JUEGO Y TABLERO -->
+        <div id="game-section" class="hidden flex-grow flex flex-col gap-6">
+
+            <!-- Estado de Turnos y Marcador de Puntos -->
+            <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div id="turn-card" class="md:col-span-1 bg-slate-900 border border-amber-500/50 rounded-xl p-4 flex flex-col justify-between active-turn">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Turno Actual</span>
+                        <span id="current-player-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold text-white bg-red-700">E1</span>
+                    </div>
+                    <div class="my-3">
+                        <h3 id="current-player-name" class="text-lg font-bold text-slate-100 truncate">Equipo Alpha</h3>
+                        <p id="current-player-status" class="text-xs text-amber-400 mt-0.5">Frente al dilema práctico</p>
+                    </div>
+                    <button id="btn-roll" onclick="handleTurnAction()" class="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-lg transition shadow flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-lightbulb"></i> <span id="btn-roll-text">Enfrentar Experimento Mental</span>
+                    </button>
+                </div>
+
+                <div class="md:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Puntos de Inferencia Deductiva</h4>
+                        <span class="text-xs text-slate-500"><i class="fa-solid fa-brain text-amber-500/80"></i> Medidor de Comprensión Lógica</span>
+                    </div>
+                    <div id="score-board" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <!-- Tarjetas por jugador dinámicas -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TABLERO SECUENCIAL DE 6 CASILLAS -->
+            <section class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl relative flex-grow flex flex-col justify-center">
+                <div class="text-xs text-slate-400 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-trend-up text-amber-400"></i>
+                    <span>Trayectoria inductiva: Del objeto cotidiano a la abstracción de la mercancía</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 relative">
+                    
+                    <!-- Casilla 1 -->
+                    <div id="tile-1" class="board-tile bg-slate-900 border-2 border-slate-700 rounded-xl p-4 flex flex-col justify-between min-h-[160px] relative">
+                        <div class="flex justify-between items-start">
+                            <span class="w-7 h-7 rounded-full bg-slate-800 text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-700">1</span>
+                            <i class="fa-solid fa-bread-slice text-amber-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-200 text-sm mt-2">1. Taller</h3>
+                            <p class="text-[11px] text-amber-400 font-medium">Panadero y Sastre</p>
+                            <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">¿En qué se diferencian los oficios prácticos?</p>
+                        </div>
+                        <div class="tokens-container flex flex-wrap gap-1 min-h-[28px] mt-2 pt-2 border-t border-slate-800" id="tokens-tile-1"></div>
+                    </div>
+
+                    <!-- Casilla 2 -->
+                    <div id="tile-2" class="board-tile bg-slate-900 border-2 border-slate-700 rounded-xl p-4 flex flex-col justify-between min-h-[160px] relative">
+                        <div class="flex justify-between items-start">
+                            <span class="w-7 h-7 rounded-full bg-slate-800 text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-700">2</span>
+                            <i class="fa-solid fa-clock text-blue-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-200 text-sm mt-2">2. Fábrica</h3>
+                            <p class="text-[11px] text-blue-400 font-medium">Horas y Esfuerzo</p>
+                            <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">¿Cómo medir trabajos tan distintos?</p>
+                        </div>
+                        <div class="tokens-container flex flex-wrap gap-1 min-h-[28px] mt-2 pt-2 border-t border-slate-800" id="tokens-tile-2"></div>
+                    </div>
+
+                    <!-- Casilla 3 -->
+                    <div id="tile-3" class="board-tile bg-slate-900 border-2 border-slate-700 rounded-xl p-4 flex flex-col justify-between min-h-[160px] relative">
+                        <div class="flex justify-between items-start">
+                            <span class="w-7 h-7 rounded-full bg-slate-800 text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-700">3</span>
+                            <i class="fa-solid fa-boxes-packing text-purple-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-200 text-sm mt-2">3. Almacén</h3>
+                            <p class="text-[11px] text-purple-400 font-medium">¿Útil para quién?</p>
+                            <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">Del uso propio a la venta en tienda.</p>
+                        </div>
+                        <div class="tokens-container flex flex-wrap gap-1 min-h-[28px] mt-2 pt-2 border-t border-slate-800" id="tokens-tile-3"></div>
+                    </div>
+
+                    <!-- Casilla 4 -->
+                    <div id="tile-4" class="board-tile bg-slate-900 border-2 border-slate-700 rounded-xl p-4 flex flex-col justify-between min-h-[160px] relative">
+                        <div class="flex justify-between items-start">
+                            <span class="w-7 h-7 rounded-full bg-slate-800 text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-700">4</span>
+                            <i class="fa-solid fa-hand-holding-dollar text-emerald-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-200 text-sm mt-2">4. Mercado</h3>
+                            <p class="text-[11px] text-emerald-400 font-medium">El Truco del Dinero</p>
+                            <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">¿Cambiar cosas o multiplicar dinero?</p>
+                        </div>
+                        <div class="tokens-container flex flex-wrap gap-1 min-h-[28px] mt-2 pt-2 border-t border-slate-800" id="tokens-tile-4"></div>
+                    </div>
+
+                    <!-- Casilla 5 -->
+                    <div id="tile-5" class="board-tile bg-slate-900 border-2 border-slate-700 rounded-xl p-4 flex flex-col justify-between min-h-[160px] relative">
+                        <div class="flex justify-between items-start">
+                            <span class="w-7 h-7 rounded-full bg-slate-800 text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-700">5</span>
+                            <i class="fa-solid fa-eye text-red-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-200 text-sm mt-2">5. Espejismo</h3>
+                            <p class="text-[11px] text-red-400 font-medium">¿Cosas que conversan?</p>
+                            <p class="text-[10px] text-slate-400 mt-1 line-clamp-2">La ilusión del precio independiente.</p>
+                        </div>
+                        <div class="tokens-container flex flex-wrap gap-1 min-h-[28px] mt-2 pt-2 border-t border-slate-800" id="tokens-tile-5"></div>
+                    </div>
+
+                    <!-- Casilla 6 -->
+                    <div id="tile-6" class="board-tile bg-gradient-to-b from-red-950/70 to-slate-900 border-2 border-amber-500/80 rounded-xl p-4 flex flex-col justify-between min-h-[160px] relative shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <span class="w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center">6</span>
+                            <i class="fa-solid fa-graduation-cap text-amber-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-amber-400 text-sm mt-2">6. META</h3>
+                            <p class="text-[11px] text-amber-200 font-medium">Conciencia Crítica</p>
+                            <p class="text-[10px] text-slate-300 mt-1 line-clamp-2">Síntesis: Entendiendo la mercancía.</p>
+                        </div>
+                        <div class="tokens-container flex flex-wrap gap-1 min-h-[28px] mt-2 pt-2 border-t border-red-900/50" id="tokens-tile-6"></div>
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 text-center text-xs text-slate-500 py-3 px-4">
+        <p>"La Ruta del Valor" — Recurso Didáctico de Aprendizaje Inductivo sobre la Teoría de la Mercancía (Marx).</p>
+    </footer>
+
+    <!-- MODAL DE DILEMA / PREGUNTA INDUCTIVA -->
+    <div id="modal-question" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative flex flex-col gap-4">
+            
+            <!-- Encabezado de la Casilla -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-3">
+                    <span id="modal-stage-num" class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center">1</span>
+                    <div>
+                        <h3 id="modal-stage-title" class="font-serif font-bold text-amber-400 text-base">Etapa 1: El Taller</h3>
+                        <p id="modal-stage-sub" class="text-xs text-slate-400">Observación empírica inicial</p>
+                    </div>
+                </div>
+                <span id="modal-player-tag" class="px-3 py-1 rounded-full text-xs font-bold text-white bg-slate-800 border border-slate-700">Equipo 1</span>
+            </div>
+
+            <!-- Dilema Práctico -->
+            <div>
+                <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider block mb-1">Dilema Práctico / Experimento Mental:</span>
+                <p id="modal-question-text" class="text-sm md:text-base text-slate-100 font-medium leading-relaxed">
+                    <!-- Texto dinámico -->
+                </p>
+            </div>
+
+            <!-- Opciones Deductivas -->
+            <div id="modal-options-container" class="space-y-2.5 my-1">
+                <!-- Opciones dinámicas -->
+            </div>
+
+            <!-- Feedback Revelador (Conexión Teórica) -->
+            <div id="modal-feedback" class="hidden rounded-xl p-4 border text-xs md:text-sm leading-relaxed transition-all">
+                <!-- Feedback dinámico -->
+            </div>
+
+            <!-- Botón de acción post-respuesta -->
+            <div class="flex justify-end pt-2">
+                <button id="modal-next-btn" onclick="closeQuestionModal()" class="hidden px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition shadow flex items-center gap-2 text-xs md:text-sm">
+                    <span>Avanzar en el Análisis</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL DE MAPA CONCEPTUAL DEDUCIDO -->
+    <div id="modal-concept-map" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full p-6 shadow-2xl overflow-y-auto max-h-[85vh]">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                <h3 class="font-serif font-bold text-amber-400 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-sitemap text-sm"></i> Mapa de Inferencia Teórica
+                </h3>
+                <button onclick="closeConceptMapModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <p class="text-xs text-slate-300 mb-4">Este mapa sintetiza las deducciones lógicas que realizas en cada casilla para llegar a los conceptos de Marx:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+                    <span class="text-amber-400 font-bold block mb-1">1. Del Pan/Ropa &rarr; Trabajo Concreto</span>
+                    <p class="text-slate-400">Observación: Habilidades cualitativas distintas que producen utilidad directa (Valor de Uso).</p>
+                </div>
+                <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+                    <span class="text-blue-400 font-bold block mb-1">2. Del Reloj &rarr; Trabajo Abstracto</span>
+                    <p class="text-slate-400">Observación: Al igualar cosas distintas, medimos el gasto promedio de energía humana en tiempo.</p>
+                </div>
+                <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+                    <span class="text-purple-400 font-bold block mb-1">3. Del Almacén &rarr; Doble Carácter de la Mercancía</span>
+                    <p class="text-slate-400">Observación: Un objeto solo es mercancía si es útil para *otro* y se produce para vender (Valor).</p>
+                </div>
+                <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+                    <span class="text-emerald-400 font-bold block mb-1">4. Del Intercambio &rarr; Metamorfosis y Plusvalía</span>
+                    <p class="text-slate-400">Observación: Cambiar algo útil por dinero para comer (M-D-M) vs. Invertir dinero para ganar más dinero (D-M-D').</p>
+                </div>
+                <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 col-span-1 md:col-span-2">
+                    <span class="text-red-400 font-bold block mb-1">5. De las Etiquetas de Precio &rarr; Fetichismo de la Mercancía</span>
+                    <p class="text-slate-400">Observación: Creer que el precio es una cualidad natural del objeto, ocultando que es la relación de trabajo entre personas.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeConceptMapModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-lg border border-slate-600">Cerrar Mapa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FINAL Y REFLEXIÓN INTERACTIVA -->
+    <div id="modal-victory" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-amber-500 rounded-2xl max-w-3xl w-full p-6 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-3xl mb-2">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <h2 class="font-serif font-bold text-2xl md:text-3xl text-amber-400">¡Conciencia Crítica Alcanzada!</h2>
+                <p class="text-xs md:text-sm text-slate-300 mt-1">Has deducido la estructura de la mercancía sin memorizar fórmulas.</p>
+            </div>
+
+            <!-- Marcador final -->
+            <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 mb-6">
+                <h3 class="text-xs uppercase font-bold text-amber-500 tracking-wider mb-3">Puntuación Final de Inferencia Deductiva</h3>
+                <div id="victory-scoreboard" class="space-y-2">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <!-- Síntesis Dialéctica -->
+            <div class="bg-red-950/30 border border-red-900/50 rounded-xl p-5 mb-6 text-slate-200 space-y-3">
+                <h4 class="font-serif font-bold text-amber-400 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i> Síntesis: Cómo el Trabajo Humano se Enfrenta a su Creador
+                </h4>
+                <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                    A través de este recorrido, has comprobado que un simple objeto cotidiano (como una manzana o un teléfono) encierra una contradicción: fue hecho por una persona real con habilidades específicas (<strong>Trabajo Concreto / Valor de Uso</strong>), pero en el mercado es despojado de su humanidad y reducido a un número de horas abstractas (<strong>Trabajo Abstracto / Valor</strong>).
+                </p>
+                <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                    Al final, las cosas parecen relacionarse entre sí mediante precios, mientras los seres humanos que las fabricaron quedan invisibilizados. Esto es lo que Marx denominó <strong>Fetichismo de la Mercancía</strong>: el producto del trabajo humano se convierte en una fuerza independiente que gobierna a sus propios creadores.
+                </p>
+            </div>
+
+            <div class="flex justify-center gap-4">
+                <button onclick="resetGame()" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition shadow-lg flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-rotate-right"></i> Nueva Partida Deductiva
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT DEL JUEGO -->
+    <script>
+        // --- BANCO DE PREGUNTAS INDUCTIVAS (De lo Empírico a la Teoría) ---
+        const questionBank = {
+            1: [ // Taller - Trabajo Concreto
+                {
+                    q: "Un panadero hornea pan y un sastre cose un pantalón. Si observas únicamente sus habilidades físicas y las herramientas que usan, ¿qué puedes concluir sobre su trabajo?",
+                    options: [
+                        { text: "Sus trabajos son cualitativamente totalmente distintos porque requieren técnicas y satisfacen necesidades diferentes.", correct: true },
+                        { text: "Sus trabajos son exactamente idénticos porque ambos usan las manos.", correct: false },
+                        { text: "El trabajo del sastre vale automáticamente el doble porque usa tela.", correct: false },
+                        { text: "Ninguno de los dos trabajos produce nada de utilidad para la sociedad.", correct: false }
+                    ],
+                    feedback: "¡Deducción Impecable! En la vida cotidiana, cada oficio es una actividad cualitativamente específica (amasar, cortar, coser) que crea un 'Valor de Uso' diferente. Marx llama a esta dimensión empírica TRABAJO CONCRETO."
+                },
+                {
+                    q: "Si estás perdido en una isla desierta y encuentras a un carpintero que sabe hacer una cabaña y a un financista experto en bolsa, ¿cuál trabajo tiene utilidad práctica inmediata para ti?",
+                    options: [
+                        { text: "El del financista, porque el dinero compra todo.", correct: false },
+                        { text: "El del carpintero, porque su trabajo específico produce un objeto útil para la supervivencia.", correct: true },
+                        { text: "Ninguno de los dos sirve de nada.", correct: false },
+                        { text: "Ambos valen exactamente lo mismo en la isla.", correct: false }
+                    ],
+                    feedback: "¡Exacto! El trabajo concreto se evalúa por la utilidad de su resultado físico o práctico (su Valor de Uso), sin importar su precio en el mercado."
+                }
+            ],
+            2: [ // Fábrica - Trabajo Abstracto y Tiempo
+                {
+                    q: "En una tienda queremos comparar 1 par de zapatos con 10 kilos de pan para saber si 'valen lo mismo'. Si sus formas físicas y utilidades no tienen nada que ver, ¿qué tienen en común que nos permite compararlos cuantitativamente?",
+                    options: [
+                        { text: "El color y la textura de la materia prima.", correct: false },
+                        { text: "Que ambos requirieron un gasto de tiempo de trabajo y esfuerzo humano en general para ser producidos.", correct: true },
+                        { text: "Que a los dueños de las tiendas se les ocurrió ponerles el mismo número en la etiqueta.", correct: false },
+                        { text: "Absolutamente nada; es imposible comparar cosas distintas.", correct: false }
+                    ],
+                    feedback: "¡Gran Inferencia! Al igualar cosas tan distintas, ignoramos las habilidades específicas de zapatero y panadero y nos queda solo lo que comparten: gasto de energía humana medido en TIEMPO. Marx llama a este gasto homogenizado TRABAJO ABSTRACTO, que es la sustancia del VALOR."
+                },
+                {
+                    q: "Si un artesano muy lento tarda 20 horas en hacer una mesa que la industria promedio fabrica en 2 horas, ¿podrá el artesano vender su mesa 10 veces más cara apelando a su tardanza?",
+                    options: [
+                        { text: "Sí, porque mientras más horas individuales se trabajen, más vale el producto.", correct: false },
+                        { text: "No, porque el mercado impone un estándar social promedio de tiempo para fabricar esa mesa.", correct: true },
+                        { text: "Sí, porque el comprador siempre premia la lentitud.", correct: false },
+                        { text: "No, las mesas no se pueden vender.", correct: false }
+                    ],
+                    feedback: "¡Excelente razonamiento! El valor no lo determina el tiempo perezoso o individual, sino el TIEMPO DE TRABAJO SOCIALMENTE NECESARIO (el promedio que requiere la tecnología de una época)."
+                }
+            ],
+            3: [ // Almacén - Valor de Uso vs. Valor (de Cambio)
+                {
+                    q: "Un agricultor cultiva 1,000 toneladas de maíz. Él solo come 1 ton al año con su familia y guarda las 999 ton restantes en un almacén. Para él, esas 999 toneladas sobrantes:",
+                    options: [
+                        { text: "Tienen un enorme valor de uso personal, se las comerá todas aunque explote.", correct: false },
+                        { text: "Ya no le sirven como alimento directo, sino como un medio para cambiarlas o venderlas por otras cosas.", correct: true },
+                        { text: "Pierden todo su valor y hay que tirarlas a la basura.", correct: false },
+                        { text: "Se convierten automáticamente en barras de oro físicas.", correct: false }
+                    ],
+                    feedback: "¡Deducido con éxito! Para que un objeto sea 'Mercancía', no basta con que sea útil para su dueño. Debe tener la capacidad de ser intercambiado. Ahí se separa el VALOR DE USO (utilidad) del VALOR DE CAMBIO."
+                },
+                {
+                    q: "Un pintor hace un cuadro hermoso únicamente para colgarlo en su sala. ¿Es ese cuadro una 'Mercancía' según la lógica del intercambio?",
+                    options: [
+                        { text: "Sí, porque es bonito y costó trabajo.", correct: false },
+                        { text: "No, es un bien con Valor de Uso personal, pero no es Mercancía porque no fue producido para entrar al mercado.", correct: true },
+                        { text: "Sí, todo lo que existe es una mercancía por definición.", correct: false },
+                        { text: "No, porque el arte no requiere ningún tipo de trabajo.", correct: false }
+                    ],
+                    feedback: "¡Correcto! Una cosa puede tener Valor de Uso sin ser Mercancía (ej. el aire, o un objeto hecho para consumo propio). La mercancía requiere socialmente ser destinada a la venta."
+                }
+            ],
+            4: [ // Mercado - Metamorfosis y Plusvalía
+                {
+                    q: "Compara estas dos situaciones en el mercado: A) Un zapatero vende zapatos para comprar pan y alimentar a su familia. B) Un comerciante usa dinero para comprar zapatos y luego revenderlos por más dinero. ¿Cuál es la diferencia de lógica?",
+                    options: [
+                        { text: "En A se busca satisfacer una necesidad (M-D-M); en B se busca multiplicar la suma inicial de dinero (D-M-D').", correct: true },
+                        { text: "Ambas situaciones persiguen exactamente el mismo objetivo sin ninguna diferencia.", correct: false },
+                        { text: "En A se gana dinero infinito y en B se regala la mercancía.", correct: false },
+                        { text: "Ninguna tiene sentido en una economía real.", correct: false }
+                    ],
+                    feedback: "¡Inferencia Brillante! Has descubierto la diferencia entre la circulación simple (Mercancía-Dinero-Mercancía) y el circuito del CAPITAL (Dinero-Mercancía-Más Dinero / D-M-D'). El incremento generado en el segundo circuito es la PLUSVALÍA."
+                },
+                {
+                    q: "Cuando vas a la tienda con $5 dólares y los cambias por un cuaderno, ¿qué ha ocurrido empíricamente?",
+                    options: [
+                        { text: "El dinero desapareció para siempre de la economía.", correct: false },
+                        { text: "La mercancía dinero 'mutó' en la mercancía cuaderno, cambiando su forma de valor para satisfacer tu necesidad.", correct: true },
+                        { text: "Sufriste un robo sin darte cuenta.", correct: false },
+                        { text: "El cuaderno ahora vale cero dólares.", correct: false }
+                    ],
+                    feedback: "¡Exacto! A este proceso de intercambio Marx lo llama METAMORFOSIS DE LA MERCANCÍA: la conversión de la forma mercancía en forma dinero y viceversa."
+                }
+            ],
+            5: [ // Espejismo - Fetichismo de la Mercancía
+                {
+                    q: "Llegas a un centro comercial y ves un par de zapatillas que cuestan $200 y otras de aspecto similar que cuestan $20. Si alguien dice: 'La de $200 es cara porque esa marca tiene poder en sí misma', ¿qué está pasando desapercibido?",
+                    options: [
+                        { text: "Está ocultando que la diferencia refleja relaciones de trabajo, producción y comercialización entre personas, no una propiedad mágica del calzado.", correct: true },
+                        { text: "Está diciendo la verdad: las cosas tienen alma y deciden su precio.", correct: false },
+                        { text: "Que las zapatillas baratas están hechas de papel periódico.", correct: false },
+                        { text: "Que el dinero no tiene ninguna relación con las mercancías.", correct: false }
+                    ],
+                    feedback: "¡Has descubierto el Espejismo! Creer que las mercancías tienen 'valor' como una propiedad natural/mágica propia (como su color o peso) oculta que el precio es una RELACIÓN SOCIAL entre seres humanos. Marx llamó a esta ilusión FETICHISMO DE LA MERCANCÍA."
+                },
+                {
+                    q: "En el mercado cotidiano, cuando dos personas dicen '1 saco de trigo equivale a 2 metros de tela', da la impresión de que el trigo y la tela están conversando entre sí. ¿Qué ocurre en realidad?",
+                    options: [
+                        { text: "Son los trabajos de los agricultores y tejedores los que se están relacionando a través de sus productos.", correct: true },
+                        { text: "Las telas y el trigo tienen consciencia y negocian en secreto.", correct: false },
+                        { text: "Es una coincidencia matemática sin ninguna relación humana.", correct: false },
+                        { text: "El mercado funciona sin que intervenga ninguna persona en ningún momento.", correct: false }
+                    ],
+                    feedback: "¡Exacto! El fetichismo hace que las relaciones sociales entre personas aparezcan disfrazadas como relaciones cuantitativas entre 'cosas'."
+                }
+            ],
+            6: [ // Meta - Conciencia Crítica
+                {
+                    q: "Tras analizar todo este recorrido (Taller &rarr; Fábrica &rarr; Almacén &rarr; Mercado &rarr; Espejismo), ¿cuál es la conclusión lógica sobre cómo funciona la mercancía en nuestra vida diaria?",
+                    options: [
+                        { text: "Que los objetos de consumo no son simples cosas inofensivas, sino la cristalización de relaciones de trabajo humano que el mercado suele invisibilizar.", correct: true },
+                        { text: "Que lo único importante es comprar productos sin pensar de dónde vienen.", correct: false },
+                        { text: "Que la economía es una ciencia exacta donde el trabajo humano no influye.", correct: false },
+                        { text: "Que el trabajo concreto y abstracto son exactamente lo mismo.", correct: false }
+                    ],
+                    feedback: "¡Felicidades! Has desarrollado CONCIENCIA CRÍTICA. Entender la mercancía requiere ir más allá de la etiqueta del precio para reconocer el trabajo humano y las relaciones sociales contenidas en ella."
+                }
+            ]
+        };
+
+        // --- ESTADO DEL JUEGO ---
+        const colors = [
+            { bg: 'bg-red-700', text: 'text-red-400', border: 'border-red-600', name: 'Rojo' },
+            { bg: 'bg-blue-600', text: 'text-blue-400', border: 'border-blue-500', name: 'Azul' },
+            { bg: 'bg-amber-500', text: 'text-amber-400', border: 'border-amber-500', name: 'Dorado' },
+            { bg: 'bg-emerald-600', text: 'text-emerald-400', border: 'border-emerald-500', name: 'Verde' }
+        ];
+
+        let gameState = {
+            numPlayers: 3,
+            currentPlayerIndex: 0,
+            players: [],
+            isGameOver: false,
+            awaitingModal: false
+        };
+
+        window.onload = function() {
+            setPlayerCount(3);
+        };
+
+        function setPlayerCount(count) {
+            gameState.numPlayers = count;
+            
+            const buttons = document.querySelectorAll('.count-btn');
+            buttons.forEach((btn, idx) => {
+                if (idx + 1 === count) {
+                    btn.className = "count-btn py-3 rounded-xl border border-amber-500 bg-amber-500/20 text-amber-400 font-bold transition shadow";
+                } else {
+                    btn.className = "count-btn py-3 rounded-xl border border-slate-700 bg-slate-800 text-white font-bold transition hover:bg-slate-700";
+                }
+            });
+
+            const container = document.getElementById('player-names-container');
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const color = colors[i];
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-3";
+                div.innerHTML = `
+                    <span class="w-4 h-4 rounded-full ${color.bg} shadow flex-shrink-0"></span>
+                    <input type="text" id="player-name-input-${i}" value="Equipo ${i + 1}" placeholder="Nombre del Equipo ${i + 1}" 
+                        class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-500 w-full">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        function startGame() {
+            gameState.players = [];
+            for (let i = 0; i < gameState.numPlayers; i++) {
+                const input = document.getElementById(`player-name-input-${i}`);
+                const name = input && input.value.trim() ? input.value.trim() : `Equipo ${i + 1}`;
+                gameState.players.push({
+                    id: i + 1,
+                    name: name,
+                    position: 1,
+                    score: 0,
+                    color: colors[i]
+                });
+            }
+
+            gameState.currentPlayerIndex = 0;
+            gameState.isGameOver = false;
+
+            document.getElementById('setup-section').classList.add('hidden');
+            document.getElementById('game-section').classList.remove('hidden');
+
+            renderScoreboard();
+            renderBoardTokens();
+            updateTurnUI();
+        }
+
+        function renderScoreboard() {
+            const container = document.getElementById('score-board');
+            container.innerHTML = '';
+
+            gameState.players.forEach((p, idx) => {
+                const isCurrent = idx === gameState.currentPlayerIndex;
+                const card = document.createElement('div');
+                card.className = `p-2.5 rounded-lg border flex items-center justify-between ${isCurrent ? 'bg-slate-800/90 border-amber-500 shadow' : 'bg-slate-950/50 border-slate-800'}`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="w-3 h-3 rounded-full ${p.color.bg} flex-shrink-0"></span>
+                        <span class="text-xs font-semibold text-slate-200 truncate">${p.name}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-amber-400 font-bold">${p.score} pts</span>
+                        <span class="text-[10px] text-slate-500 block">Casilla ${p.position}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderBoardTokens() {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById(`tokens-tile-${i}`);
+                if (el) el.innerHTML = '';
+            }
+
+            gameState.players.forEach(p => {
+                const tileEl = document.getElementById(`tokens-tile-${p.position}`);
+                if (tileEl) {
+                    const token = document.createElement('div');
+                    token.className = `token w-6 h-6 rounded-full ${p.color.bg} border-2 border-slate-950 text-[10px] font-bold text-white flex items-center justify-center shadow-lg`;
+                    token.innerText = `E${p.id}`;
+                    token.title = `${p.name} (Casilla ${p.position})`;
+                    tileEl.appendChild(token);
+                }
+            });
+        }
+
+        function updateTurnUI() {
+            const player = gameState.players[gameState.currentPlayerIndex];
+            
+            document.getElementById('current-player-badge').className = `px-2.5 py-0.5 rounded-full text-xs font-bold text-white ${player.color.bg}`;
+            document.getElementById('current-player-badge').innerText = `E${player.id}`;
+            document.getElementById('current-player-name').innerText = player.name;
+            document.getElementById('current-player-status').innerText = `En Casilla ${player.position}: Lista para analizar`;
+            
+            const btnRoll = document.getElementById('btn-roll');
+            btnRoll.disabled = false;
+            document.getElementById('btn-roll-text').innerText = player.position === 6 ? "¡Evaluación de Meta!" : "Analizar Caso Práctico";
+
+            renderScoreboard();
+        }
+
+        function handleTurnAction() {
+            if (gameState.isGameOver || gameState.awaitingModal) return;
+            const player = gameState.players[gameState.currentPlayerIndex];
+
+            if (player.position >= 6) {
+                checkGameEndCondition();
+                return;
+            }
+
+            openQuestionModal(player);
+        }
+
+        function openQuestionModal(player) {
+            gameState.awaitingModal = true;
+            const currentTile = player.position;
+
+            const stageTitles = {
+                1: { title: "Etapa 1: El Taller (Inferencia: Trabajo Concreto)", sub: "Observación: Habilidades y trabajos distintos" },
+                2: { title: "Etapa 2: La Fábrica (Inferencia: Trabajo Abstracto)", sub: "Observación: Medir el tiempo social promedio" },
+                3: { title: "Etapa 3: El Almacén (Inferencia: Doble Carácter)", sub: "Observación: De la utilidad propia a la venta social" },
+                4: { title: "Etapa 4: El Mercado (Inferencia: Metamorfosis y Plusvalía)", sub: "Observación: El truco del dinero y el intercambio" },
+                5: { title: "Etapa 5: El Espejismo (Inferencia: Fetichismo)", sub: "Observación: ¿Conversación entre cosas o personas?" },
+                6: { title: "Etapa 6: La Meta (Inferencia: Conciencia Crítica)", sub: "Observación: Comprensión holística" }
+            };
+
+            const questions = questionBank[currentTile] || questionBank[1];
+            const randomQ = questions[Math.floor(Math.random() * questions.length)];
+
+            document.getElementById('modal-stage-num').innerText = currentTile;
+            document.getElementById('modal-stage-title').innerText = stageTitles[currentTile].title;
+            document.getElementById('modal-stage-sub').innerText = stageTitles[currentTile].sub;
+            
+            const playerTag = document.getElementById('modal-player-tag');
+            playerTag.innerText = `${player.name}`;
+            playerTag.className = `px-3 py-1 rounded-full text-xs font-bold text-white ${player.color.bg}`;
+
+            document.getElementById('modal-question-text').innerText = randomQ.q;
+
+            const optionsContainer = document.getElementById('modal-options-container');
+            optionsContainer.innerHTML = '';
+
+            document.getElementById('modal-feedback').classList.add('hidden');
+            document.getElementById('modal-next-btn').classList.add('hidden');
+
+            randomQ.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "opt-btn w-full text-left p-3 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700/80 text-xs md:text-sm text-slate-200 transition flex items-start gap-3";
+                btn.innerHTML = `
+                    <span class="w-5 h-5 rounded-full bg-slate-900 border border-slate-600 text-slate-400 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">${String.fromCharCode(65 + idx)}</span>
+                    <span class="flex-grow">${opt.text}</span>
+                `;
+                btn.onclick = () => evaluateAnswer(opt.correct, randomQ.feedback, player, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('modal-question').classList.remove('hidden');
+        }
+
+        function evaluateAnswer(isCorrect, feedbackText, player, selectedBtn) {
+            const allOpts = document.querySelectorAll('.opt-btn');
+            allOpts.forEach(btn => {
+                btn.onclick = null;
+                btn.classList.add('opacity-60', 'cursor-not-allowed');
+            });
+
+            const feedbackEl = document.getElementById('modal-feedback');
+            feedbackEl.classList.remove('hidden');
+
+            if (isCorrect) {
+                selectedBtn.classList.remove('border-slate-700', 'bg-slate-800/80', 'opacity-60');
+                selectedBtn.classList.add('border-emerald-500', 'bg-emerald-950/70', 'text-emerald-200', 'opacity-100');
+                
+                player.position = Math.min(6, player.position + 1);
+                player.score += 100;
+
+                feedbackEl.className = "rounded-xl p-4 border border-emerald-500/50 bg-emerald-950/50 text-emerald-200 text-xs md:text-sm leading-relaxed";
+                feedbackEl.innerHTML = `
+                    <div class="font-bold flex items-center gap-2 mb-1 text-emerald-400">
+                        <i class="fa-solid fa-circle-check"></i> ¡Inferencia Lógica Correcta! (+100 Puntos)
+                    </div>
+                    <div class="mt-1">${feedbackText}</div>
+                    <div class="mt-2 text-amber-300 font-semibold">¡Avanzas a la Casilla ${player.position}!</div>
+                `;
+            } else {
+                selectedBtn.classList.remove('border-slate-700', 'bg-slate-800/80', 'opacity-60');
+                selectedBtn.classList.add('border-red-500', 'bg-red-950/70', 'text-red-200', 'opacity-100');
+
+                player.position = Math.max(1, player.position - 1);
+                player.score = Math.max(0, player.score - 25);
+
+                feedbackEl.className = "rounded-xl p-4 border border-red-500/50 bg-red-950/50 text-red-200 text-xs md:text-sm leading-relaxed";
+                feedbackEl.innerHTML = `
+                    <div class="font-bold flex items-center gap-2 mb-1 text-red-400">
+                        <i class="fa-solid fa-circle-xmark"></i> La lógica práctica sugiere otra deducción (-25 Puntos)
+                    </div>
+                    <div class="mt-1">${feedbackText}</div>
+                    <div class="mt-2 text-slate-300">Retrocedes 1 casilla para reconsiderar el experimento mental desde la base.</div>
+                `;
+            }
+
+            renderBoardTokens();
+            renderScoreboard();
+
+            document.getElementById('modal-next-btn').classList.remove('hidden');
+        }
+
+        function closeQuestionModal() {
+            document.getElementById('modal-question').classList.add('hidden');
+            gameState.awaitingModal = false;
+
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            if (currentPlayer.position === 6) {
+                checkGameEndCondition();
+                return;
+            }
+
+            gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.numPlayers;
+            updateTurnUI();
+        }
+
+        function checkGameEndCondition() {
+            const winner = gameState.players.find(p => p.position === 6);
+            if (winner) {
+                showVictoryModal();
+            } else {
+                gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.numPlayers;
+                updateTurnUI();
+            }
+        }
+
+        function showVictoryModal() {
+            gameState.isGameOver = true;
+            const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+
+            const container = document.getElementById('victory-scoreboard');
+            container.innerHTML = '';
+
+            sortedPlayers.forEach((p, rank) => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800";
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full ${p.color.bg} text-white text-xs font-bold flex items-center justify-center">${rank + 1}</span>
+                        <div>
+                            <span class="text-sm font-bold text-slate-100">${p.name}</span>
+                            <span class="text-xs text-slate-400 block">Casilla ${p.position} / 6</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-bold text-amber-400">${p.score} pts</span>
+                        <span class="text-[10px] text-emerald-400 block">${p.position === 6 ? '¡Conciencia Alcanzada!' : 'En Trayecto'}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            document.getElementById('modal-victory').classList.remove('hidden');
+        }
+
+        function openConceptMapModal() {
+            document.getElementById('modal-concept-map').classList.remove('hidden');
+        }
+
+        function closeConceptMapModal() {
+            document.getElementById('modal-concept-map').classList.add('hidden');
+        }
+
+        function confirmReset() {
+            if (confirm("¿Deseas reiniciar la partida y volver a configurar los equipos?")) {
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            document.getElementById('modal-victory').classList.add('hidden');
+            document.getElementById('modal-question').classList.add('hidden');
+            document.getElementById('game-section').classList.add('hidden');
+            document.getElementById('setup-section').classList.remove('hidden');
+            gameState.isGameOver = false;
+            gameState.awaitingModal = false;
+        }
+    </script>
+</body>
+</html>
